@@ -1,13 +1,16 @@
 package xyz.oreganoli.base;
 
-import java.util.ArrayList;
+import androidx.room.Dao;
+import androidx.room.Insert;
+import androidx.room.Query;
 
-public class PlaceDao {
-    private ArrayList<Place> places = new ArrayList<>(); // in memory for now
-    public ArrayList<Place> get_all() {
-        return places;
-    }
-    public void insert(Place place) {
-        places.add(place);
-    }
+import java.util.ArrayList;
+import java.util.List;
+
+@Dao
+public interface PlaceDao {
+    @Query("SELECT * FROM place")
+    public List<Place> get_all();
+    @Insert
+    public void insert(Place place);
 }

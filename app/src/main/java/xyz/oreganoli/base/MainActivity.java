@@ -4,11 +4,12 @@ import android.view.View;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import androidx.room.Room;
 
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
-    PlaceDao places = new PlaceDao();
+    PlaceDatabase places;
     Random rand;
     EditText communeInput;
     EditText countyInput;
@@ -31,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
     }
     private void renderList() {
         list.removeAllViews();
-        for (Place each : places.get_all()) {
+        for (Place each : places.getPlaceDao().get_all()) {
             TextView text = new TextView(this);
             text.setText(each.commune + ", " + each.county + ", " + each.province + ", " + each.country + ", " + each.continent);
             list.addView(text);
@@ -60,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
         if (place.continent.isEmpty()) {
             place.continent = random_continents[rand.nextInt(random_continents.length)];
         }
-        places.insert(place);
+        places.getPlaceDao().insert(place);
         communeInput.setText("");
         countyInput.setText("");
         countryInput.setText("");
@@ -75,6 +76,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         rand = new Random();
         getWidgets();
+        places = Room.databaseBuilder(getApplicationContext(), PlaceDatabase.class, "placeDB")
+                .build();
         renderList();
     }
 }
