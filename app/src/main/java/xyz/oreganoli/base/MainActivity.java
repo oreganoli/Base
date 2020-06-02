@@ -1,9 +1,6 @@
 package xyz.oreganoli.base;
 
-import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.Spinner;
+import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 
@@ -13,9 +10,6 @@ public class MainActivity extends AppCompatActivity {
     EditText provinceInput;
     EditText countryInput;
     EditText continentInput;
-    Spinner criterion;
-    EditText searchInput;
-    CheckBox oneRow;
     LinearLayout list;
 
     private void getWidgets() {
@@ -24,9 +18,6 @@ public class MainActivity extends AppCompatActivity {
         provinceInput = findViewById(R.id.provinceInput);
         countryInput = findViewById(R.id.countryInput);
         continentInput = findViewById(R.id.continentInput);
-        criterion = findViewById(R.id.criterion);
-        searchInput = findViewById(R.id.searchInput);
-        oneRow = findViewById(R.id.oneRow);
         list = findViewById(R.id.list);
     }
     @Override
