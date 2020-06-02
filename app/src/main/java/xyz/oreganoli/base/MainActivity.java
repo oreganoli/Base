@@ -6,10 +6,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import androidx.room.Room;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
-    PlaceDatabase places;
+    ThreadPoolExecutor executor;
+    PlaceDatabase placeDb;
+    BlockingQueue<List<Place>> places = new LinkedBlockingQueue<>();
     Random rand;
     EditText communeInput;
     EditText countyInput;
@@ -30,12 +38,16 @@ public class MainActivity extends AppCompatActivity {
         continentInput = findViewById(R.id.continentInput);
         list = findViewById(R.id.list);
     }
-    private void renderList() {
+    void renderList() {
         list.removeAllViews();
-        for (Place each : places.getPlaceDao().get_all()) {
-            TextView text = new TextView(this);
-            text.setText(each.commune + ", " + each.county + ", " + each.province + ", " + each.country + ", " + each.continent);
-            list.addView(text);
+        try {
+            for (Place each : places.take()) {
+                TextView text = new TextView(this);
+                text.setText(each.commune + ", " + each.county + ", " + each.province + ", " + each.country + ", " + each.continent);
+                list.addView(text);
+            }
+        } catch (InterruptedException ex) {
+            Toast.makeText(this, "Threading error!", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -61,11 +73,11 @@ public class MainActivity extends AppCompatActivity {
         if (place.continent.isEmpty()) {
             place.continent = random_continents[rand.nextInt(random_continents.length)];
         }
-        places.getPlaceDao().insert(place);
+        executor.execute(new InsertOrder(placeDb.getPlaceDao(), place, places));
         communeInput.setText("");
         countyInput.setText("");
-        countryInput.setText("");
         provinceInput.setText("");
+        countryInput.setText("");
         continentInput.setText("");
         renderList();
     }
@@ -76,8 +88,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         rand = new Random();
         getWidgets();
-        places = Room.databaseBuilder(getApplicationContext(), PlaceDatabase.class, "placeDB")
+        executor = new ThreadPoolExecutor(4, 4, 10, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>());
+        placeDb = Room.databaseBuilder(getApplicationContext(), PlaceDatabase.class, "placeDB")
                 .build();
+        executor.execute(new ReadOrder(placeDb.getPlaceDao(), places));
         renderList();
     }
 }
